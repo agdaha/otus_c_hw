@@ -1,0 +1,29 @@
+--- ./src/common/clib-package.c	2020-09-08 04:51:23.000000000 +0500
++++ ./src/common/clib-package_ref.c	2025-05-01 18:52:41.198201587 +0500
+@@ -654,9 +654,15 @@
+     if (retries-- <= 0) {
+       goto error;
+     } else {
++      if (res) {
++        if (res->data) free(res->data);
++        res -> data = NULL;
++        free(res);
++      }
+ #ifdef HAVE_PTHREADS
+       init_curl_share();
+       _debug("GET %s", json_url);
++
+       res = http_get_shared(json_url, clib_package_curl_share);
+ #else
+       res = http_get(json_url);
+@@ -1380,7 +1386,10 @@
+ #ifdef HAVE_PTHREADS
+     pthread_mutex_lock(&lock.mutex);
+ #endif
+-    hash_set(visited_packages, strdup(pkg->name), "t");
++    if (NULL == hash_get(visited_packages, pkg->name)){
++      hash_set(visited_packages, strdup(pkg->name), "t");
++    }
+ #ifdef HAVE_PTHREADS
+     pthread_mutex_unlock(&lock.mutex);
+ #endif

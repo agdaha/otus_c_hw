@@ -1,0 +1,18 @@
+[2025-05-21 14:54:01] INFO: main.c:22 (main) - Logger initialized successfully
+[2025-05-21 14:54:01] DEBUG: main.c:7 (test_debug_logger) - Debug message
+[2025-05-21 14:54:01] WARNING: main.c:11 (test_warn_logger) - Warning message
+[2025-05-21 14:54:01] ERROR: main.c:28 (main) - Failed to initialize logger with NULL filename: Invalid argument
+Backtrace:
+./logger_test(logger_log+0x270) [0x5565e4ce0a6e]
+./logger_test(main+0xfe) [0x5565e4ce0425]
+/lib64/libc.so.6(+0x29d6a) [0x7f2e34e71d6a]
+/lib64/libc.so.6(__libc_start_main+0x85) [0x7f2e34e71e25]
+./logger_test(_start+0x21) [0x5565e4ce01e1]
+[2025-05-21 14:54:01] ERROR: main.c:33 (main) - Failed to initialize logger with invalid path: No such file or directory
+Backtrace:
+./logger_test(logger_log+0x270) [0x5565e4ce0a6e]
+./logger_test(main+0x162) [0x5565e4ce0489]
+/lib64/libc.so.6(+0x29d6a) [0x7f2e34e71d6a]
+/lib64/libc.so.6(__libc_start_main+0x85) [0x7f2e34e71e25]
+./logger_test(_start+0x21) [0x5565e4ce01e1]
+[2025-05-21 14:54:01] INFO: main.c:36 (main) - All tests completed

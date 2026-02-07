@@ -1,0 +1,15 @@
+255 251 1   IAC WILL ECHO 
+255 253 24  IAC DO TERMINAL-TYPE (I can undrestand this command option byte)
+255 253 31  IAC DO NAWS   Negotiate About Window Size  (I can't undrestand this command option byte)
+255 253 36  IAC DO ? (I can't undrestand this command option byte) ENVIR Telnet Environment Option
+255 253 39  IAC DO ? (I can't undrestand this command option byte) ENVIR Telnet Environment Option
+255 253 0   IAC DO
+
+1 ECHO
+3 SUPPRESS-GO-AHEAD
+5 STATUS
+6 TIMING-MARK
+255 EXTENDED-OPTIONS-LIST (EXOPL)
+25 END-OF-RECORD
+29 3270-REGIME
+
