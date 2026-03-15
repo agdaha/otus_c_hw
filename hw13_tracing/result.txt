@@ -1,0 +1,90 @@
+# tracer: nop
+#
+# entries-in-buffer/entries-written: 78/78   #P:12
+#
+#                                _-----=> irqs-off/BH-disabled
+#                               / _----=> need-resched
+#                              | / _---=> hardirq/softirq
+#                              || / _--=> preempt-depth
+#                              ||| / _-=> migrate-disable
+#                              |||| /     delay
+#           TASK-PID     CPU#  |||||  TIMESTAMP  FUNCTION
+#              | |         |   |||||     |         |
+        trace_me-190405  [009] ...1. 188291.075589: sys_execve -> 0x0
+        trace_me-190405  [009] ...1. 188291.075636: sys_brk(brk: 0)
+        trace_me-190405  [009] ...1. 188291.075638: sys_brk -> 0x55be40235000
+        trace_me-190405  [009] ...1. 188291.075727: sys_access(filename: 7f3373f9c5c0, mode: 4)
+        trace_me-190405  [009] ...1. 188291.075734: sys_access -> 0xfffffffffffffffe
+        trace_me-190405  [009] ...1. 188291.075739: sys_openat(dfd: ffffff9c, filename: 7f3373f9b474, flags: 80000, mode: 0)
+        trace_me-190405  [009] ...1. 188291.075747: sys_openat -> 0x3
+        trace_me-190405  [009] ...1. 188291.075749: sys_newfstatat(dfd: 3, filename: 7f3373f9bfe0, statbuf: 7ffd0e35b4b0, flag: 1000)
+        trace_me-190405  [009] ...1. 188291.075753: sys_newfstatat -> 0x0
+        trace_me-190405  [009] ...1. 188291.075754: sys_mmap(addr: 0, len: 1fa93, prot: 1, flags: 2, fd: 3, off: 0)
+        trace_me-190405  [009] ...1. 188291.075762: sys_mmap -> 0x7f3373f4c000
+        trace_me-190405  [009] ...1. 188291.075763: sys_close(fd: 3)
+        trace_me-190405  [009] ...1. 188291.075764: sys_close -> 0x0
+        trace_me-190405  [009] ...1. 188291.075795: sys_openat(dfd: ffffff9c, filename: 7f3373fa6fa0, flags: 80000, mode: 0)
+        trace_me-190405  [009] ...1. 188291.075801: sys_openat -> 0x3
+        trace_me-190405  [009] ...1. 188291.075802: sys_read(fd: 3, buf: 7ffd0e35b618, count: 340)
+        trace_me-190405  [009] ...1. 188291.075805: sys_read -> 0x340
+        trace_me-190405  [009] ...1. 188291.075806: sys_pread64(fd: 3, buf: 7ffd0e35b230, count: 310, pos: 40)
+        trace_me-190405  [009] ...1. 188291.075808: sys_pread64 -> 0x310
+        trace_me-190405  [009] ...1. 188291.075809: sys_newfstatat(dfd: 3, filename: 7f3373f9bfe0, statbuf: 7ffd0e35b4b0, flag: 1000)
+        trace_me-190405  [009] ...1. 188291.075810: sys_newfstatat -> 0x0
+        trace_me-190405  [009] ...1. 188291.075812: sys_mmap(addr: 0, len: 2000, prot: 3, flags: 22, fd: ffffffff, off: 0)
+        trace_me-190405  [009] ...1. 188291.075825: sys_mmap -> 0x7f3373f4a000
+        trace_me-190405  [009] ...1. 188291.075834: sys_pread64(fd: 3, buf: 7ffd0e35b100, count: 310, pos: 40)
+        trace_me-190405  [009] ...1. 188291.075836: sys_pread64 -> 0x310
+        trace_me-190405  [009] ...1. 188291.075842: sys_mmap(addr: 0, len: 1e7dd0, prot: 1, flags: 802, fd: 3, off: 0)
+        trace_me-190405  [009] ...1. 188291.075875: sys_mmap -> 0x7f3373d62000
+        trace_me-190405  [009] ...1. 188291.075878: sys_mmap(addr: 7f3373d88000, len: 15a000, prot: 5, flags: 812, fd: 3, off: 26000)
+        trace_me-190405  [009] ...1. 188291.075902: sys_mmap -> 0x7f3373d88000
+        trace_me-190405  [009] ...1. 188291.075903: sys_mmap(addr: 7f3373ee2000, len: 55000, prot: 1, flags: 812, fd: 3, off: 180000)
+        trace_me-190405  [009] ...1. 188291.075916: sys_mmap -> 0x7f3373ee2000
+        trace_me-190405  [009] ...1. 188291.075918: sys_mmap(addr: 7f3373f37000, len: 6000, prot: 3, flags: 812, fd: 3, off: 1d4000)
+        trace_me-190405  [009] ...1. 188291.075930: sys_mmap -> 0x7f3373f37000
+        trace_me-190405  [009] ...1. 188291.075940: sys_mmap(addr: 7f3373f3d000, len: cdd0, prot: 3, flags: 32, fd: ffffffff, off: 0)
+        trace_me-190405  [009] ...1. 188291.075949: sys_mmap -> 0x7f3373f3d000
+        trace_me-190405  [009] ...1. 188291.075973: sys_close(fd: 3)
+        trace_me-190405  [009] ...1. 188291.075974: sys_close -> 0x0
+        trace_me-190405  [009] ...1. 188291.075991: sys_mmap(addr: 0, len: 3000, prot: 3, flags: 22, fd: ffffffff, off: 0)
+        trace_me-190405  [009] ...1. 188291.075997: sys_mmap -> 0x7f3373d5f000
+        trace_me-190405  [009] ...1. 188291.076009: sys_arch_prctl(option: 1002, arg2: 7f3373d5f740)
+        trace_me-190405  [009] ...1. 188291.076010: sys_arch_prctl -> 0x0
+        trace_me-190405  [009] ...1. 188291.076011: sys_set_tid_address(tidptr: 7f3373d5fa10)
+        trace_me-190405  [009] ...1. 188291.076012: sys_set_tid_address -> 0x2e7c5
+        trace_me-190405  [009] ...1. 188291.076013: sys_set_robust_list(head: 7f3373d5fa20, len: 18)
+        trace_me-190405  [009] ...1. 188291.076014: sys_set_robust_list -> 0x0
+        trace_me-190405  [009] ...1. 188291.076015: sys_rseq(rseq: 7f3373d60060, rseq_len: 20, flags: 0, sig: 53053053)
+        trace_me-190405  [009] ...1. 188291.076016: sys_rseq -> 0x0
+        trace_me-190405  [009] ...1. 188291.076143: sys_mprotect(start: 7f3373f37000, len: 4000, prot: 1)
+        trace_me-190405  [009] ...1. 188291.076157: sys_mprotect -> 0x0
+        trace_me-190405  [009] ...1. 188291.076167: sys_mprotect(start: 55be32bcb000, len: 1000, prot: 1)
+        trace_me-190405  [009] ...1. 188291.076173: sys_mprotect -> 0x0
+        trace_me-190405  [009] ...1. 188291.076180: sys_mprotect(start: 7f3373fa3000, len: 2000, prot: 1)
+        trace_me-190405  [009] ...1. 188291.076188: sys_mprotect -> 0x0
+        trace_me-190405  [009] ...1. 188291.076214: sys_prlimit64(pid: 0, resource: 3, new_rlim: 0, old_rlim: 7ffd0e35bff0)
+        trace_me-190405  [009] ...1. 188291.076216: sys_prlimit64 -> 0x0
+        trace_me-190405  [009] ...1. 188291.076234: sys_munmap(addr: 7f3373f4c000, len: 1fa93)
+        trace_me-190405  [009] ...1. 188291.076262: sys_munmap -> 0x0
+        trace_me-190405  [009] ...1. 188291.076281: sys_mmap(addr: 0, len: 1000, prot: 3, flags: 22, fd: ffffffff, off: 0)
+        trace_me-190405  [009] ...1. 188291.076296: sys_mmap -> 0x7f3373f6b000
+        trace_me-190405  [009] ...1. 188291.076298: sys_openat(dfd: ffffff9c, filename: 55be32bca009, flags: 241, mode: 1a4)
+        trace_me-190405  [009] ...1. 188291.076412: sys_openat -> 0x3
+        trace_me-190405  [009] ...1. 188291.076416: sys_write(fd: 3, buf: 55be32bca018, count: 10)
+        trace_me-190405  [009] ...1. 188291.076451: sys_write -> 0x10
+        trace_me-190405  [009] ...1. 188291.076460: sys_close(fd: 3)
+        trace_me-190405  [009] ...1. 188291.076525: sys_close -> 0x0
+        trace_me-190405  [009] ...1. 188291.076555: sys_clone(clone_flags: 1200011, newsp: 0, parent_tidptr: 0, child_tidptr: 7f3373d5fa10, tls: 0)
+        trace_me-190405  [009] ...1. 188291.076680: sys_clone -> 0x2e7c6
+        trace_me-190405  [009] ...1. 188291.076692: sys_wait4(upid: ffffffff, stat_addr: 0, options: 0, ru: 0)
+        trace_me-190406  [008] ...1. 188291.076700: sys_clone -> 0x0
+        trace_me-190406  [008] ...1. 188291.076716: sys_set_robust_list(head: 7f3373d5fa20, len: 18)
+        trace_me-190406  [008] ...1. 188291.076717: sys_set_robust_list -> 0x0
+        trace_me-190406  [008] ...1. 188291.076749: sys_clock_nanosleep(which_clock: 0, flags: 0, rqtp: 7ffd0e35c2a0, rmtp: 0)
+        trace_me-190406  [008] ...1. 188291.577015: sys_clock_nanosleep -> 0x0
+        trace_me-190406  [004] ...1. 188291.577358: sys_exit_group(error_code: 0)
+        trace_me-190405  [009] ...1. 188291.577669: sys_wait4 -> 0x2e7c6
+        trace_me-190405  [009] ...1. 188291.577690: sys_munmap(addr: 7f3373f6b000, len: 1000)
+        trace_me-190405  [009] ...1. 188291.577712: sys_munmap -> 0x0
+        trace_me-190405  [009] ...1. 188291.577763: sys_exit_group(error_code: 0)
