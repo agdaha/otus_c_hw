@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include "records.h"
 #include <stdio.h>
 #include <string.h>
@@ -36,7 +37,8 @@ void add_record(Record *list, const char *name, int score)
         {
             for (int j = MAX_RECORDS - 1; j > i; j--)
                 list[j] = list[j - 1];
-            strncpy(list[i].name, name, MAX_NAME_LEN);
+            //strncpy(list[i].name, name, MAX_NAME_LEN);
+            strlcpy(list[i].name, name, sizeof(list[i].name));
             list[i].score = score;
             break;
         }

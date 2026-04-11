@@ -2,21 +2,22 @@
 #include <stdlib.h>
 #include <string.h>
 
-// Сдвиг, объединение и повторный сдвиг одной линии из 4 элементов
-static bool process_line(int *a, int *b, int *c, int *d, int *score)
+// Сдвиг, объединение и повторный сдвиг одной линии
+static bool process_line(int *line, int size, int *score)
 {
-    int line[4] = {*a, *b, *c, *d};
-    int temp[4] = {0};
+    int *temp = calloc(size, sizeof(int));
+    if (!temp) return false;
+
     int pos = 0;
     bool changed = false;
 
-    for (int i = 0; i < 4; i++)
+    for (int i = 0; i < size; i++)
     {
         if (line[i] != 0)
             temp[pos++] = line[i];
     }
 
-    for (int i = 0; i < 3; i++)
+    for (int i = 0; i < size - 1; i++)
     {
         if (temp[i] != 0 && temp[i] == temp[i + 1])
         {
@@ -26,22 +27,26 @@ static bool process_line(int *a, int *b, int *c, int *d, int *score)
         }
     }
 
-    int final_l[4] = {0};
+    int *final_l = calloc(size, sizeof(int));
+    if (!final_l) {
+        free(temp);
+        return false;
+    }
     pos = 0;
-    for (int i = 0; i < 4; i++)
+    for (int i = 0; i < size; i++)
     {
         if (temp[i] != 0)
             final_l[pos++] = temp[i];
     }
 
-    if (memcmp(line, final_l, sizeof(int) * 4) != 0)
+    if (memcmp(line, final_l, sizeof(int) * size) != 0)
     {
         changed = true;
-        *a = final_l[0];
-        *b = final_l[1];
-        *c = final_l[2];
-        *d = final_l[3];
+        memcpy(line, final_l, sizeof(int) * size);
     }
+
+    free(temp);
+    free(final_l);
     return changed;
 }
 
@@ -68,43 +73,86 @@ void add_random_tile(Game *g)
     if (count > 0)
     {
         int idx = rand() % count;
-        g->board[empty[idx][0]][empty[idx][1]] = (rand() % 10 == 0) ? 4 : 2;
+        int row = empty[idx][0];
+        int col = empty[idx][1];
+        int rnd_val =  (rand() % 10 == 0) ? 4 : 2;
+        g->board[row][col] = rnd_val;
     }
 }
 
 bool move_up(Game *g)
 {
     bool changed = false;
-    for (int i = 0; i < 4; i++)
-        if (process_line(&g->board[0][i], &g->board[1][i], &g->board[2][i], &g->board[3][i], &g->score))
+    int line[GRID_SIZE];
+
+    for (int col = 0; col < GRID_SIZE; col++)
+    {
+        for (int row = 0; row < GRID_SIZE; row++)
+            line[row] = g->board[row][col];
+
+        if (process_line(line, GRID_SIZE, &g->score))
             changed = true;
+
+        for (int row = 0; row < GRID_SIZE; row++)
+            g->board[row][col] = line[row];
+    }
     return changed;
 }
 
 bool move_down(Game *g)
 {
     bool changed = false;
-    for (int i = 0; i < 4; i++)
-        if (process_line(&g->board[3][i], &g->board[2][i], &g->board[1][i], &g->board[0][i], &g->score))
+    int line[GRID_SIZE];
+
+    for (int col = 0; col < GRID_SIZE; col++)
+    {
+        for (int row = 0; row < GRID_SIZE; row++)
+            line[row] = g->board[GRID_SIZE - 1 - row][col];
+
+        if (process_line(line, GRID_SIZE, &g->score))
             changed = true;
+
+        for (int row = 0; row < GRID_SIZE; row++)
+            g->board[GRID_SIZE - 1 - row][col] = line[row];
+    }
     return changed;
 }
 
 bool move_left(Game *g)
 {
     bool changed = false;
-    for (int i = 0; i < 4; i++)
-        if (process_line(&g->board[i][0], &g->board[i][1], &g->board[i][2], &g->board[i][3], &g->score))
+    int line[GRID_SIZE];
+
+    for (int row = 0; row < GRID_SIZE; row++)
+    {
+        for (int col = 0; col < GRID_SIZE; col++)
+            line[col] = g->board[row][col];
+
+        if (process_line(line, GRID_SIZE, &g->score))
             changed = true;
+
+        for (int col = 0; col < GRID_SIZE; col++)
+            g->board[row][col] = line[col];
+    }
     return changed;
 }
 
 bool move_right(Game *g)
 {
     bool changed = false;
-    for (int i = 0; i < 4; i++)
-        if (process_line(&g->board[i][3], &g->board[i][2], &g->board[i][1], &g->board[i][0], &g->score))
+    int line[GRID_SIZE];
+
+    for (int row = 0; row < GRID_SIZE; row++)
+    {
+        for (int col = 0; col < GRID_SIZE; col++)
+            line[col] = g->board[row][GRID_SIZE - 1 - col];
+
+        if (process_line(line, GRID_SIZE, &g->score))
             changed = true;
+
+        for (int col = 0; col < GRID_SIZE; col++)
+            g->board[row][GRID_SIZE - 1 - col] = line[col];
+    }
     return changed;
 }
 

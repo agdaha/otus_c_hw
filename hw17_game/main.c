@@ -20,7 +20,209 @@ typedef enum
     ST_TOPS,
     ST_NAME_INPUT,
     ST_EXIT
-} State;
+} AppState;
+
+// Структура, содержащая всё состояние игры
+typedef struct
+{
+    AppState state;
+    bool redraw;
+
+    int menu_sel;
+
+    Game game;
+    int final_score;
+
+    // Переменные диалога ввода имени
+    char name_buf[MAX_NAME_LEN];
+    int name_pos;
+    bool blink_on;
+    ALLEGRO_TIMER *blink_timer;
+
+    // Таблица рекордов
+    Record leaders[MAX_RECORDS];
+
+    // Ресурсы Allegro
+    ALLEGRO_DISPLAY *display;
+    ALLEGRO_EVENT_QUEUE *queue;
+    ALLEGRO_TIMER *timer;
+    ALLEGRO_FONT *font;
+    ALLEGRO_BITMAP *bg;
+
+    int win_w;
+    int win_h;
+} GameState;
+
+
+static void handle_menu_event(ALLEGRO_EVENT *ev, GameState *gs)
+{
+    if (ev->keyboard.keycode == ALLEGRO_KEY_UP)
+        gs->menu_sel = (gs->menu_sel + 2) % 3;
+    else if (ev->keyboard.keycode == ALLEGRO_KEY_DOWN)
+        gs->menu_sel = (gs->menu_sel + 1) % 3;
+    else if (ev->keyboard.keycode == ALLEGRO_KEY_ENTER)
+    {
+        if (gs->menu_sel == 0)
+        {
+            init_game(&gs->game);
+            gs->state = ST_GAME;
+        }
+        else if (gs->menu_sel == 1)
+            gs->state = ST_TOPS;
+        else
+            gs->state = ST_EXIT;
+    }
+}
+
+static void handle_game_event(ALLEGRO_EVENT *ev, GameState *gs)
+{
+    bool moved = false;
+    if (ev->keyboard.keycode == ALLEGRO_KEY_UP)
+        moved = move_up(&gs->game);
+    else if (ev->keyboard.keycode == ALLEGRO_KEY_DOWN)
+        moved = move_down(&gs->game);
+    else if (ev->keyboard.keycode == ALLEGRO_KEY_LEFT)
+        moved = move_left(&gs->game);
+    else if (ev->keyboard.keycode == ALLEGRO_KEY_RIGHT)
+        moved = move_right(&gs->game);
+
+    if (moved)
+    {
+        add_random_tile(&gs->game);
+        if (!can_move(&gs->game))
+        {
+            gs->final_score = gs->game.score;
+            memset(gs->name_buf, 0, MAX_NAME_LEN);
+            gs->name_pos = 0;
+            gs->blink_on = false;
+            al_start_timer(gs->blink_timer);
+            gs->state = ST_NAME_INPUT;
+        }
+    }
+}
+
+static void handle_name_input_event(ALLEGRO_EVENT *ev, GameState *gs)
+{
+    if (ev->keyboard.keycode == ALLEGRO_KEY_ENTER)
+    {
+        al_stop_timer(gs->blink_timer);
+        if (gs->name_buf[0] == 0 || gs->name_buf[0] == '_')
+            add_record(gs->leaders, "Player", gs->final_score);
+        else
+            add_record(gs->leaders, gs->name_buf, gs->final_score);
+        gs->state = ST_TOPS;
+    }
+    else if (ev->keyboard.keycode == ALLEGRO_KEY_LEFT)
+    {
+        if (gs->name_pos > 0)
+            (gs->name_pos)--;
+    }
+    else if (ev->keyboard.keycode == ALLEGRO_KEY_RIGHT)
+    {
+        if (gs->name_pos < MAX_NAME_LEN - 2)
+            (gs->name_pos)++;
+    }
+    else if (ev->keyboard.keycode == ALLEGRO_KEY_BACKSPACE)
+    {
+        if (gs->name_pos > 0)
+        {
+            (gs->name_pos)--;
+            gs->name_buf[gs->name_pos] = 0;
+        }
+    }
+    else if (ev->keyboard.keycode >= ALLEGRO_KEY_A && ev->keyboard.keycode <= ALLEGRO_KEY_Z)
+    {
+        if (gs->name_pos < MAX_NAME_LEN - 2)
+        {
+            char ch = (char)('A' + (ev->keyboard.keycode - ALLEGRO_KEY_A));
+            gs->name_buf[gs->name_pos] = ch;
+            (gs->name_pos)++;
+        }
+    }
+    else if (ev->keyboard.keycode == ALLEGRO_KEY_SPACE)
+    {
+        if (gs->name_pos < MAX_NAME_LEN - 2)
+        {
+            gs->name_buf[gs->name_pos] = ' ';
+            (gs->name_pos)++;
+        }
+    }
+}
+
+static void handle_event(ALLEGRO_EVENT *ev, GameState *gs)
+{
+    if (ev->keyboard.keycode == ALLEGRO_KEY_ESCAPE)
+    {
+        gs->state = ST_MENU;
+        return;
+    }
+
+    switch (gs->state)
+    {
+    case ST_MENU:
+        handle_menu_event(ev, gs);
+        break;
+    case ST_GAME:
+        handle_game_event(ev, gs);
+        break;
+    case ST_NAME_INPUT:
+        handle_name_input_event(ev, gs);
+        break;
+    case ST_TOPS:
+    case ST_EXIT:
+        break;
+    }
+}
+
+static void handle_timer_event(ALLEGRO_EVENT *ev, GameState *gs)
+{
+    if (ev->timer.source == gs->blink_timer)
+        gs->blink_on = !gs->blink_on;
+}
+
+static void process_events(GameState *gs)
+{
+    ALLEGRO_EVENT ev;
+    al_wait_for_event(gs->queue, &ev);
+
+    if (ev.type == ALLEGRO_EVENT_TIMER)
+    {
+        gs->redraw = true;
+        handle_timer_event(&ev, gs);
+    }
+    else if (ev.type == ALLEGRO_EVENT_DISPLAY_CLOSE)
+    {
+        gs->state = ST_EXIT;
+    }
+    else if (ev.type == ALLEGRO_EVENT_KEY_DOWN)
+    {
+        handle_event(&ev, gs);
+    }
+}
+
+static void render(GameState *gs)
+{
+    UiRes res = {gs->font, gs->bg};
+    UiDim dim = {gs->win_w, gs->win_h};
+
+    switch (gs->state)
+    {
+    case ST_MENU:
+        draw_menu(res, dim, gs->menu_sel);
+        break;
+    case ST_GAME:
+        draw_game(res, &gs->game);
+        break;
+    case ST_TOPS:
+        draw_leaderboard(res, dim, gs->leaders);
+        break;
+    case ST_NAME_INPUT:
+        draw_name_input(res, dim, gs->name_buf, gs->name_pos, gs->final_score, gs->blink_on);
+        break;
+    case ST_EXIT:
+        break;
+    }
+}
 
 int main(void)
 {
@@ -34,172 +236,52 @@ int main(void)
     al_init_ttf_addon();
     al_init_image_addon();
 
-    ALLEGRO_DISPLAY *disp = al_create_display(WIDTH, HEIGHT);
-    ALLEGRO_EVENT_QUEUE *queue = al_create_event_queue();
-    ALLEGRO_TIMER *timer = al_create_timer(1.0 / 60);
+    GameState gs = {0};
 
-    al_register_event_source(queue, al_get_display_event_source(disp));
-    al_register_event_source(queue, al_get_keyboard_event_source());
-    al_register_event_source(queue, al_get_timer_event_source(timer));
+    gs.display = al_create_display(WIDTH, HEIGHT);
+    gs.queue = al_create_event_queue();
+    gs.timer = al_create_timer(1.0 / 60);
+    gs.blink_timer = al_create_timer(1.0 / 2);
 
-    ALLEGRO_FONT *font = al_load_ttf_font("./assets/Dusha V5.ttf", 32, 0);
-    if (!font)
-        font = al_create_builtin_font();
+    al_register_event_source(gs.queue, al_get_display_event_source(gs.display));
+    al_register_event_source(gs.queue, al_get_keyboard_event_source());
+    al_register_event_source(gs.queue, al_get_timer_event_source(gs.timer));
+    al_register_event_source(gs.queue, al_get_timer_event_source(gs.blink_timer));
 
-    ALLEGRO_BITMAP *bg = al_load_bitmap("./assets/bg.png");
-    if (!bg)
-        bg = al_create_bitmap(WIDTH, HEIGHT);
+    gs.font = al_load_ttf_font("./assets/Dusha V5.ttf", 32, 0);
+    if (!gs.font)
+        gs.font = al_create_builtin_font();
 
-    Game game;
-    Record leaders[MAX_RECORDS];
-    load_records(leaders);
+    gs.bg = al_load_bitmap("./assets/bg.png");
+    if (!gs.bg)
+        gs.bg = al_create_bitmap(WIDTH, HEIGHT);
 
-    char name_buf[MAX_NAME_LEN];
-    int name_pos = 0;
-    int final_score = 0;
-    ALLEGRO_TIMER *blink_timer = al_create_timer(1.0 / 2);
-    bool blink_on = false;
-    al_register_event_source(queue, al_get_timer_event_source(blink_timer));
+    load_records(gs.leaders);
 
-    State state = ST_MENU;
-    int menu_sel = 0;
-    bool redraw = true;
+    gs.win_w = WIDTH;
+    gs.win_h = HEIGHT;
+    gs.state = ST_MENU;
+    gs.redraw = true;
 
-    int win_w = WIDTH, win_h = HEIGHT;
-
-    al_start_timer(timer);
-    while (state != ST_EXIT)
+    al_start_timer(gs.timer);
+    while (gs.state != ST_EXIT)
     {
-        ALLEGRO_EVENT ev;
-        al_wait_for_event(queue, &ev);
+        process_events(&gs);
 
-        if (ev.type == ALLEGRO_EVENT_TIMER)
-        {
-            redraw = true;
-            if (ev.timer.source == blink_timer)
-                blink_on = !blink_on;
-        }
-        else if (ev.type == ALLEGRO_EVENT_DISPLAY_CLOSE)
-            state = ST_EXIT;
-        else if (ev.type == ALLEGRO_EVENT_KEY_DOWN)
-        {
-            if (ev.keyboard.keycode == ALLEGRO_KEY_ESCAPE)
-                state = ST_MENU;
-
-            if (state == ST_MENU)
-            {
-                if (ev.keyboard.keycode == ALLEGRO_KEY_UP)
-                    menu_sel = (menu_sel + 2) % 3;
-                if (ev.keyboard.keycode == ALLEGRO_KEY_DOWN)
-                    menu_sel = (menu_sel + 1) % 3;
-                if (ev.keyboard.keycode == ALLEGRO_KEY_ENTER)
-                {
-                    if (menu_sel == 0)
-                    {
-                        init_game(&game);
-                        state = ST_GAME;
-                    }
-                    else if (menu_sel == 1)
-                        state = ST_TOPS;
-                    else
-                        state = ST_EXIT;
-                }
-            }
-            else if (state == ST_GAME)
-            {
-                bool moved = false;
-                if (ev.keyboard.keycode == ALLEGRO_KEY_UP)
-                    moved = move_up(&game);
-                if (ev.keyboard.keycode == ALLEGRO_KEY_DOWN)
-                    moved = move_down(&game);
-                if (ev.keyboard.keycode == ALLEGRO_KEY_LEFT)
-                    moved = move_left(&game);
-                if (ev.keyboard.keycode == ALLEGRO_KEY_RIGHT)
-                    moved = move_right(&game);
-
-                if (moved)
-                {
-                    add_random_tile(&game);
-                    if (!can_move(&game))
-                    {
-                        final_score = game.score;
-                        memset(name_buf, 0, sizeof(name_buf));
-                        name_pos = 0;
-                        al_start_timer(blink_timer);
-                        state = ST_NAME_INPUT;
-                    }
-                }
-            }
-            else if (state == ST_NAME_INPUT)
-            {
-                if (ev.keyboard.keycode == ALLEGRO_KEY_ENTER)
-                {
-                    al_stop_timer(blink_timer);
-                    if (name_buf[0] == 0 || name_buf[0] == '_')
-                        add_record(leaders, "Player", final_score);
-                    else
-                        add_record(leaders, name_buf, final_score);
-                    state = ST_TOPS;
-                }
-                else if (ev.keyboard.keycode == ALLEGRO_KEY_LEFT)
-                {
-                    if (name_pos > 0)
-                        name_pos--;
-                }
-                else if (ev.keyboard.keycode == ALLEGRO_KEY_RIGHT)
-                {
-                    if (name_pos < MAX_NAME_LEN - 2)
-                        name_pos++;
-                }
-                else if (ev.keyboard.keycode == ALLEGRO_KEY_BACKSPACE)
-                {
-                    if (name_pos > 0)
-                    {
-                        name_pos--;
-                        name_buf[name_pos] = 0;
-                    }
-                }
-                else if (ev.keyboard.keycode >= ALLEGRO_KEY_A && ev.keyboard.keycode <= ALLEGRO_KEY_Z)
-                {
-                    if (name_pos < MAX_NAME_LEN - 2)
-                    {
-                        char ch = (char)('A' + (ev.keyboard.keycode - ALLEGRO_KEY_A));
-                        name_buf[name_pos] = ch;
-                        name_pos++;
-                    }
-                }
-                else if (ev.keyboard.keycode == ALLEGRO_KEY_SPACE)
-                {
-                    if (name_pos < MAX_NAME_LEN - 2)
-                    {
-                        name_buf[name_pos] = ' ';
-                        name_pos++;
-                    }
-                }
-            }
-        }
-
-        if (redraw && al_is_event_queue_empty(queue))
+        if (gs.redraw && al_is_event_queue_empty(gs.queue))
         {
             al_clear_to_color(al_map_rgb(250, 248, 239));
-            if (state == ST_MENU)
-                draw_menu(font, bg, win_w, win_h, menu_sel);
-            else if (state == ST_GAME)
-                draw_game(font, &game);
-            else if (state == ST_TOPS)
-                draw_leaderboard(font, bg, win_w, win_h, leaders);
-            else if (state == ST_NAME_INPUT)
-                draw_name_input(font, bg, win_w, win_h, name_buf, name_pos, final_score, blink_on);
+            render(&gs);
             al_flip_display();
-            redraw = false;
+            gs.redraw = false;
         }
     }
 
-    al_destroy_bitmap(bg);
-    al_destroy_font(font);
-    al_destroy_display(disp);
-    al_destroy_timer(timer);
-    al_destroy_timer(blink_timer);
-    al_destroy_event_queue(queue);
+    al_destroy_bitmap(gs.bg);
+    al_destroy_font(gs.font);
+    al_destroy_display(gs.display);
+    al_destroy_timer(gs.timer);
+    al_destroy_timer(gs.blink_timer);
+    al_destroy_event_queue(gs.queue);
     return 0;
 }
